@@ -1,23 +1,41 @@
 name: C/C++ CI
 
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: configure
-      run: ./configure
-    - name: make
-      run: make
-    - name: make check
-      run: make check
-    - name: make distcheck
-      run: make distcheck
+      # Checkout your repository code
+      - uses: actions/checkout@v3
+
+      # Install required build tools and libraries
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            autoconf \
+            automake \
+            libtool \
+            pkg-config \
+            cmake \
+            libssl-dev \
+            zlib1g-dev
+
+      # Make sure configure script is executable
+      - name: Make configure executable
+        run: chmod +x ./configure
+
+      # Configure the project (adjust path if needed)
+      - name: Configure project
+        run: ./configure
+
+      # Build the project
+      - name: Build project
+        run: make -j$(nproc)
+
+      # Run tests
+      - name: Run tests
+        run: make test
